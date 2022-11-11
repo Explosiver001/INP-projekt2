@@ -55,8 +55,7 @@ main:
         _end_if_a:
                 ;sb      r25, 0(r26)
 
-
-                ;oseteni preteceni zhora 
+                ;oseteni preteceni shora 
                 daddi   r25, r0, limits     
                 lb      r25, 1(r25)         
                 slt     r16, r15, r25
