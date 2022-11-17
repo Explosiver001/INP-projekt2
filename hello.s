@@ -99,8 +99,8 @@ print_string:   ; adresa retezce se ocekava v r4
 
 limits_check: ; kontroluje se znak v r15
                 ;oseteni vyteceni zespoda 
-                daddi   r25, r0, limits     ;klic do r25
-                lb      r25, 0(r25)         ;a znak klice
+                daddi   r25, r0, limits     ;limits do r25
+                lb      r25, 0(r25)         ;a znak pro porovnani
                 slt     r16, r15, r25
                 beqz    r16, _end_if_a
 
@@ -113,10 +113,10 @@ limits_check: ; kontroluje se znak v r15
         _end_if_a:
 
                 ;oseteni preteceni shora 
-                daddi   r25, r0, limits     
-                lb      r25, 1(r25)         
-                slt     r16, r15, r25
-                bnez    r16, _end_if_z
+                daddi   r25, r0, limits     ;limits do r25
+                lb      r25, 1(r25)         ;z znak pro porovnani
+                slt     r16, r25, r15
+                beqz    r16, _end_if_z
 
         _if_above_z:
                 sub     r15, r15, r25
