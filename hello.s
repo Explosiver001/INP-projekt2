@@ -14,70 +14,68 @@ limits:         .ascii "az" ; meze
 
 
 params_sys5:    .space  8   ; misto pro ulozeni adresy pocatku
-                            ; retezce pro vypis pomoci syscall 5
+							; retezce pro vypis pomoci syscall 5
                             ; (viz nize "funkce" print_string)
 
 ; CODE SEGMENT
                 .text
 
-                ; ZDE NAHRADTE KOD VASIM RESENIM
 main:
-                daddi   r4, r0, login
-                daddi   r26, r0, cipher
+                daddi   r4, r0, login   ;r4 obsahuje odkaz na login
+                daddi   r26, r0, cipher ;r26 obsahuje odkaz na cipher
                 
-
-    loop:
+	;cykleni pres znaky loginu
+    loop: 		
                 ;++++++++++++++++++++++++++++++++++++++
-                lb      r15, 0(r4)
-                ;sb      r15, 0(r26)     ;help
-                ;osetreni cisla + odecet hodnoty 'a' od prvniho znaku
-                daddi   r25, r0, limits     ;klic do r25
-                lb      r25, 0(r25)         ;znak a
+                lb      r15, 0(r4)          ;login[x%2==0]
+                ;osetreni cisla  
+                daddi   r25, r0, limits     ;limits do r25
+                lb      r25, 0(r25)         ;a znak pro porovnani
                 
 
-                slt     r16, r15, r25
-                bnez    r16, _end_loop
+                slt     r16, r15, r25	
+                bnez    r16, _end_loop 		;login[x%2==0] je cislo
 
-                sub     r15, r15, r25
+				;odecet hodnoty 'a' od prvniho znaku
+                sub     r15, r15, r25   	;login[x%2==0]-'a'
 
                 ;pricteni prvniho znaku klice
-                daddi   r25, r0, key    ;klic do r25
-                lb      r25, 0(r25)     ;prvni znak klice
-                daddi   r25, r25, 1
-                add     r15, r25, r15
+                daddi   r25, r0, key    	;klic do r25
+                lb      r25, 0(r25)     	;prvni znak klice
+                daddi   r25, r25, 1		
+                add     r15, r25, r15   	;r15 = login[x%2==0] - 'a' + 'n' + 1
 
-                jal     limits_check    ;osetreni mezi a-z
+                jal     limits_check    	;osetreni mezi a-z
                 
-                sb      r15, 0(r26)     ;ulozeni znaku
-                daddi   r26, r26, 1     ;posun na dalsi znak loginu
-                daddi   r4, r4, 1       ;posun na dalsi znak loginu
+                sb      r15, 0(r26)     	;ulozeni znaku
+                daddi   r26, r26, 1     	;posun na dalsi znak loginu
+                daddi   r4, r4, 1       	;posun na dalsi znak loginu
                 
 
                 ;--------------------------------------
-                lb      r15, 0(r4)
-                ;sb      r15, 0(r26)     ;help
+                lb      r15, 0(r4)			;login[x%2==1]
                 ;osetreni cisla + odecet hodnoty 'a' od prvniho znaku
-                daddi   r25, r0, limits     ;klic do r25
-                lb      r25, 0(r25)         ;znak a
+                daddi   r25, r0, limits     ;limits do r25
+                lb      r25, 0(r25)         ;a znak pro porovnani
                 
                 slt     r16, r15, r25
-                bnez    r16, _end_loop
+                bnez    r16, _end_loop		;login[x%2==1] je cislo
 
                 add     r15, r15, r25
 
-                ;pricteni prvniho znaku klice
-                daddi   r25, r0, key    ;klic do r25
-                lb      r25, 1(r25)     ;druhy znak klice
-                daddi   r25, r25, 1
-                sub     r15, r15, r25
+                ;odecteni druheho znaku klice
+                daddi   r25, r0, key    	;klic do r25
+                lb      r25, 1(r25)     	;druhy znak klice
+                daddi   r25, r25, 1			;r25 = 'o' + 1
+                sub     r15, r15, r25		;r15 = login[x%2==1] - 'o' - 1
 
-                jal     limits_check    ;osetreni mezi a-z
+                jal     limits_check    	;osetreni mezi a-z
                 
-                sb      r15, 0(r26)     ;ulozeni znaku
-                daddi   r26, r26, 1     ;posun na dalsi znak loginu
-                daddi   r4, r4, 1       ;posun na dalsi znak loginu
+                sb      r15, 0(r26)     	;ulozeni znaku
+                daddi   r26, r26, 1     	;posun na dalsi znak loginu
+                daddi   r4, r4, 1       	;posun na dalsi znak loginu
 
-                b loop
+                b loop						;skok na loop
         _end_loop:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; nesahat
@@ -102,28 +100,28 @@ limits_check: ; kontroluje se znak v r15
                 daddi   r25, r0, limits     ;limits do r25
                 lb      r25, 0(r25)         ;a znak pro porovnani
                 slt     r16, r15, r25
-                beqz    r16, _end_if_a
+                beqz    r16, _end_if_a		;znak > 'a'
 
         _if_below_a:
-                sub     r15, r25, r15       ;znak - a
-                daddi   r25, r0, limits     
-                lb      r25, 1(r25)         
-                sub     r15, r25, r15       ;z-(znak - a)
-                daddi     r15, r15, 1
+                sub     r15, r25, r15       ;r15 = znak - 'a'
+                daddi   r25, r0, limits     ;limits do r25
+                lb      r25, 1(r25)         ;z znak pro porovnani
+                sub     r15, r25, r15       ;r15 = 'z' - (znak - 'a')
+                daddi   r15, r15, 1			;r15 = 'z' - (znak - 'a') + 1
         _end_if_a:
 
                 ;oseteni preteceni shora 
                 daddi   r25, r0, limits     ;limits do r25
                 lb      r25, 1(r25)         ;z znak pro porovnani
                 slt     r16, r25, r15
-                beqz    r16, _end_if_z
+                beqz    r16, _end_if_z		;znak < 'z'
 
         _if_above_z:
                 sub     r15, r15, r25
-                daddi   r25, r0, limits     ;klic do r25
-                lb      r25, 0(r25)         ;a znak klice
-                add     r15, r25, r15
-                daddi     r15, r15, -1
+                daddi   r25, r0, limits     ;limits do r25
+                lb      r25, 0(r25)         ;a znak pro porovnani
+                add     r15, r25, r15		;r15 = znak - 'z' + 'a'
+                daddi   r15, r15, -1		;r15 = znak - 'z' + 'a' + 1
         _end_if_z:
 
                 jr      r31                 ; return
